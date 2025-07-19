@@ -45,20 +45,21 @@ const Skills = () => {
       },
     },
   };
+
   const itemVariants = {
     hidden: {
-      y: 20,
+      y: 30,
       opacity: 0,
     },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
         stiffness: 100,
       },
     },
   };
+
   return (
     <section className="py-24 px-6 md:px-12 bg-[#111]" id="skills" ref={ref}>
       <div className="container mx-auto max-w-5xl">

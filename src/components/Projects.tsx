@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
 import * as THREE from "three";
+import React from "react";
 
 const projectsData = [
   {
@@ -58,27 +60,32 @@ const projectsData = [
   },
 ];
 
-const ShaderSlider = ({ currentIndex, images, onTransitionComplete }) => {
-  const mountRef = useRef(null);
-  const sceneRef = useRef(null);
-  const rendererRef = useRef(null);
+interface ShaderSliderProps {
+  currentIndex: number;
+  images: string[];
+  onTransitionComplete: () => void;
+}
+
+const ShaderSlider: React.FC<ShaderSliderProps> = ({
+  currentIndex,
+  images,
+}) => {
   const materialRef = useRef(null);
   const texturesRef = useRef([]);
   const animationRef = useRef(null);
+  const mountRef = React.useRef<HTMLDivElement | null>(null);
+  const currentMount = mountRef.current;
 
   useEffect(() => {
-    if (!mountRef.current) return;
+    if (!currentMount) return;
 
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const renderer = new THREE.WebGLRenderer({ alpha: true });
 
-    renderer.setSize(
-      mountRef.current.offsetWidth,
-      mountRef.current.offsetHeight
-    );
-    mountRef.current.appendChild(renderer.domElement);
+    renderer.setSize(currentMount.offsetWidth, currentMount.offsetHeight);
+    currentMount.appendChild(renderer.domElement);
 
     const vertexShader = `
       varying vec2 vUv;
@@ -129,8 +136,14 @@ const ShaderSlider = ({ currentIndex, images, onTransitionComplete }) => {
       fragmentShader,
     });
 
+    const sceneRef = React.useRef(new THREE.Scene());
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    const materialRef = React.useRef<THREE.Material | null>(null);
+    const texturesRef = useRef<THREE.Texture[]>([]);
     const geometry = new THREE.PlaneGeometry(2, 2);
     const mesh = new THREE.Mesh(geometry, material);
+    const mountRef = useRef<HTMLDivElement | null>(null);
+
     scene.add(mesh);
 
     sceneRef.current = scene;
@@ -164,38 +177,48 @@ const ShaderSlider = ({ currentIndex, images, onTransitionComplete }) => {
   useEffect(() => {
     if (!materialRef.current || !texturesRef.current.length) return;
 
-    const material = materialRef.current;
     const currentTexture = texturesRef.current[0];
     const nextTexture = texturesRef.current[1];
 
-    if (currentTexture && nextTexture) {
-      material.uniforms.texture1.value = currentTexture;
-      material.uniforms.texture2.value = nextTexture;
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        texture1: { value: currentTexture },
+        texture2: { value: nextTexture },
+        progress: { value: 0.0 }, // Add a progress uniform for animation
+      },
+      vertexShader: `
+            void main() {
+                gl_Position = vec4(position, 1.0);
+            }
+        `, // Make sure this is properly closed
+      fragmentShader: `
+            uniform sampler2D texture1;
+            uniform sampler2D texture2;
+            uniform float progress;
 
-      // Animate transition
-      const startTime = Date.now();
-      const duration = 2000;
+            void main() {
+                vec4 color1 = texture2D(texture1, vUv);
+                vec4 color2 = texture2D(texture2, vUv);
+                gl_FragColor = mix(color1, color2, progress);
+            }
+        `, // Make sure this is properly closed
+    });
 
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+    // Animate transition
+    const startTime = Date.now();
+    const duration = 2000;
 
-        material.uniforms.dispPower.value = progress;
-        rendererRef.current?.render(
-          sceneRef.current,
-          new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-        );
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      material.uniforms.progress.value = progress; // Update the progress uniform
 
-        if (progress < 1) {
-          animationRef.current = requestAnimationFrame(animate);
-        } else {
-          material.uniforms.dispPower.value = 0;
-          onTransitionComplete?.();
-        }
-      };
+      if (progress < 1) {
+        requestAnimationFrame(animate); // Keep animating if progress is less than 1
+      }
+    };
 
-      animate();
-    }
+    animate(); // Start the animation
 
     return () => {
       if (animationRef.current) {
@@ -232,7 +255,7 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    const handleWheel = (e) => {
+    const handleWheel = (e: { preventDefault: () => void; deltaY: number }) => {
       e.preventDefault();
       if (Math.abs(e.deltaY) > 50) {
         // Add threshold for more control
