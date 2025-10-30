@@ -1,11 +1,25 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import { useState, useEffect } from "react";
 import AnimatedText from "./AnimatedText";
+
 const About = () => {
   const [ref, inView] = useInView({
     triggerOnce: false,
     threshold: 0.2,
   });
+
+  const images = ["/Yuta.jpg", "/SDG 14.png", "/SDG 16.png"];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="py-24 px-6 md:px-12 bg-black" id="about">
       <div className="container mx-auto max-w-5xl" ref={ref}>
@@ -44,11 +58,35 @@ const About = () => {
                   repeatType: "reverse",
                 }}
               />
-              <img
-                src="/Yuta.jpg"
-                alt="Yuta Koike"
-                className="rounded-lg w-full h-auto relative z-10"
-              />
+              <div className="relative z-10 overflow-hidden rounded-lg">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={currentImageIndex}
+                    src={images[currentImageIndex]}
+                    alt={`Image ${currentImageIndex + 1}`}
+                    className="rounded-lg w-full h-auto"
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.7 }}
+                  />
+                </AnimatePresence>
+              </div>
+              {/* Image indicators */}
+              <div className="flex justify-center gap-2 mt-4">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === currentImageIndex
+                        ? "bg-[#4ecca3] w-8"
+                        : "bg-gray-600 hover:bg-gray-400"
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </motion.div>
           <div className="md:w-1/2">
@@ -74,7 +112,7 @@ const About = () => {
               About Me
             </motion.span>
             <AnimatedText
-              text="Passionate Developer & Designer"
+              text="Aspiring Full-Stack Developer & Designer"
               className="text-3xl md:text-4xl font-bold mt-2 mb-6"
               once={false}
             />
@@ -100,10 +138,11 @@ const About = () => {
                 delay: 0.3,
               }}
             >
-              I'm a creative developer with a passion for building beautiful,
-              functional, and user-friendly websites and applications. With
-              expertise in both design and development, I bridge the gap between
-              aesthetics and functionality.
+              I'm a 4th year Computer Science Student at University of Santo
+              Tomas. I'm a creative developer with a passion for building
+              beautiful, functional, and user-friendly websites and
+              applications. With expertise in both design and development, I
+              bridge the gap between aesthetics and functionality.
             </motion.p>
             <motion.p
               className="text-gray-300 mb-8"
@@ -174,4 +213,5 @@ const About = () => {
     </section>
   );
 };
+
 export default About;

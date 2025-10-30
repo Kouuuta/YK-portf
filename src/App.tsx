@@ -1,4 +1,3 @@
-import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
 import Skills from "./components/Skills";
@@ -11,7 +10,6 @@ export function App() {
   return (
     <div className="bg-black text-white min-h-screen relative">
       <TopBar />
-      <Navbar />
       <main className="overflow-hidden relative z-10">
         <Hero />
         <MarqueeSection />
