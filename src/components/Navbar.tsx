@@ -7,7 +7,7 @@ const Navbar = () => {
   const [lastScroll, setLastScroll] = useState(0);
   const [menu, setMenu] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +44,18 @@ const Navbar = () => {
     document.documentElement.classList.toggle("dark");
   };
 
-  const navItems = [
+  type DropdownItem = {
+    title: string;
+    description: string;
+  };
+
+  type NavItem = {
+    title: string;
+    badge?: string; // ✅ optional
+    dropdown?: DropdownItem[];
+  };
+
+  const navItems: NavItem[] = [
     { title: "Skills" },
     { title: "Projects" },
     {

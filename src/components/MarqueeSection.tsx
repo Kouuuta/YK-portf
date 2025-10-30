@@ -1,31 +1,30 @@
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
+
 const MarqueeSection = () => {
-  const marqueeVariants = {
+  const marqueeVariants: Variants = {
     animate: {
       x: [0, -2000],
       transition: {
-        x: {
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 20,
-          ease: "linear",
-        },
+        repeat: Infinity,
+        repeatType: "loop",
+        duration: 20,
+        ease: "linear",
       },
     },
   };
-  const reverseMarqueeVariants = {
+
+  const reverseMarqueeVariants: Variants = {
     animate: {
       x: [-2000, 0],
       transition: {
-        x: {
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 20,
-          ease: "linear",
-        },
+        repeat: Infinity,
+        repeatType: "loop",
+        duration: 20,
+        ease: "linear",
       },
     },
   };
+
   const skills = [
     "DEVELOPER",
     "DESIGNER",
@@ -33,7 +32,9 @@ const MarqueeSection = () => {
     "INNOVATOR",
     "PROBLEM SOLVER",
   ];
+
   const duplicatedSkills = [...skills, ...skills, ...skills];
+
   return (
     <div className="py-16 bg-[#111] overflow-hidden">
       <motion.div
@@ -48,6 +49,7 @@ const MarqueeSection = () => {
           </span>
         ))}
       </motion.div>
+
       <motion.div
         className="whitespace-nowrap text-6xl font-bold"
         variants={reverseMarqueeVariants}
@@ -63,4 +65,5 @@ const MarqueeSection = () => {
     </div>
   );
 };
+
 export default MarqueeSection;
